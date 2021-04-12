@@ -2,73 +2,73 @@
 def tick args
   defaults args
   render args
+  input args
   calc args
 end
 
-def calc args
-  args.state.stars.each do |star|
-    star[:x] += star[:angle].vector_x * star[:s]
-    star[:y] += star[:angle].vector_y * star[:s]
-
-    # track the distance the star has moved
-    star[:d] += star[:s]
-    # increase the speed of the star by 20%
-    star[:s] *= 1.2
-
-    # change to width and height of the
-    # star to grow as the distance increases
-    # as if it's moving towards you
-    star[:w] = 1 + 15 * star[:d].fdiv(100)
-    star[:h] = 1 + 15 * star[:d].fdiv(100)
-    star[:x] += star[:angle].vector_x *
-                star[:w].fdiv(2)
-    star[:y] += star[:angle].vector_y *
-                star[:h].fdiv(2)
-  end
-
-  args.state.stars.find_all do |star|
-    !star.intersect_rect? args.grid.rect
-  end.each do |star|
-    # reset stars, but initialize
-    # them with a new random speed
-    star[:x] = star[:initial_x]
-    star[:y] = star[:initial_y]
-    star[:s] = 0.1 * rand
-    star[:d] = 0
-    star[:w] = 1
-    star[:h] = 1
-  end
+# NOTE: the size and speed of the box is set to lower values for running within
+#       DragonRuby's Online Sandbox. Change these values to 50, and 1 if you are
+#       want to run the game locally with the full blown engine. You can purchase
+#       a license to the engine at dragonruby.org. If you bought Itch.io's Bundle
+#       for Racial Justice, you already have a license :-)
+def defaults args
+  args.state.colors       = [:red, :orange, :green, :blue, :indigo, :violet]
+  args.state.box.size     = 50
+  args.state.box.speed    = 5
+  args.state.box.x      ||= args.grid.w.half - args.state.box.size.half
+  args.state.box.y      ||= args.grid.h.half - args.state.box.size.half
+  args.state.box.dx     ||= [1, -1].sample
+  args.state.box.dy     ||= [1, -1].sample
+  args.state.box.status ||= :moving
+  set_box_color args    if !args.state.box.color
 end
 
 def render args
-  args.outputs.background_color = [0, 0, 0]
-  args.outputs.solids << args.state.stars
+  args.outputs.sprites << [
+    args.state.box.x,
+    args.state.box.y,
+    args.state.box.size,
+    args.state.box.size,
+    "sprites/square/#{args.state.box.color}.png"
+  ]
 end
 
-def defaults args
-  args.grid.origin_center!
-  args.state.warp_tunnel_size = 10;
-  args.state.stars ||= 100.map do |i|
-    rand(360)
-  end.map do |random_angle|
-    { initial_x: random_angle.vector_x *
-                 args.state.warp_tunnel_size,
-      initial_y: random_angle.vector_y *
-                 args.state.warp_tunnel_size,
-          angle: random_angle,
-              r: 128,
-              g: rand(128) + 128,
-              b: rand(128) + 128 }
-  end.map do |star|
-    star.merge x: star[:initial_x],
-               y: star[:initial_y],
-               w: 1, h: 1,
-               # make the speed a very small
-               # random number
-               s: 0.1 * rand,
-               # initialize a property
-               # to keep track of distance
-               # traveled
-               d: 0
+def input args
+  return unless args.inputs.keyboard.key_down.space
+  if args.state.box.status == :moving
+    args.state.box.status = :stopped
+  else
+    args.state.box.status = :moving
   end
+end
+
+def calc args
+  return unless args.state.box.status == :moving
+
+  args.state.box.x += args.state.box.dx * args.state.box.speed
+  args.state.box.y += args.state.box.dy * args.state.box.speed
+
+  if (args.state.box.x + args.state.box.size) > args.grid.w
+    args.state.box.x  = args.grid.w - args.state.box.size
+    args.state.box.dx = -1
+    set_box_color args
+  elsif args.state.box.x < 0
+    args.state.box.x  = 0
+    args.state.box.dx = 1
+    set_box_color args
+  end
+
+  if (args.state.box.y + args.state.box.size) > args.grid.h
+    args.state.box.y  = args.grid.h - args.state.box.size
+    args.state.box.dy = -1
+    set_box_color args
+  elsif args.state.box.y < 0
+    args.state.box.y  = 0
+    args.state.box.dy = 1
+    set_box_color args
+  end
+end
+
+def set_box_color args
+  args.state.box.color = (args.state.colors - [args.state.box.color]).sample
 end
