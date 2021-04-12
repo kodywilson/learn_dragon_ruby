@@ -1,31 +1,33 @@
 # test game while learning DragonRuby
 
 def tick args
-  # The frame at which the animation should begin
-  starting_tick = 0
+  if args.inputs.keyboard.key_down.space
+    args.state.starting_tick = args.state.tick_count
+  end
 
-  # The number of sprites in the animation
   number_of_sprites = 7
-
-  # The number of frames for each sprite
-  # of the animation
   number_of_frames_per_sprite = 6
-
-  # Whether the animation should loop
-  does_animation_loop = true
-
-  # A function that calculates the current sprite index
-  sprite_index = starting_tick.frame_index(
+  does_animation_loop = false
+  sprite_index = args.state.starting_tick.frame_index(
                    number_of_sprites,
                    number_of_frames_per_sprite,
                    does_animation_loop
                  )
-  # Draws the animation
-  args.outputs.sprites << [
-    50,                                      # X
-    20,                                      # Y
-    50,                                      # W
-    50,                                      # H
-    "sprites/misc/explosion-#{sprite_index}.png", # PATH
-  ]
+  sprite_index ||= 0
+  args.outputs.sprites << {
+    x: 50,
+    y: 20,
+    w: 50,
+    h: 50,
+    path: 'sprites/misc/explosion-sheet.png',
+    tile_x: 0 + (sprite_index * 32),
+    tile_y: 0,
+    tile_w: 32,
+    tile_h: 32,
+  }
+
+  args.outputs.labels << [80, 1.from_top,
+                          "press space to animate",
+                          -7.5,
+                          1]
 end
