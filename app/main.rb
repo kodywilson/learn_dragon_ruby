@@ -6,10 +6,21 @@ def tick args
   args.state.y ||= 250
   ticks = args.state.tick_count
   @start_tick ||= -60
+  @cat_jump_counter ||= 0
+  @bass_loop_counter ||= -1
 
   if args.inputs.mouse.click && ticks > 10 && @start_tick == -60
     @start_tick = ticks
-    args.outputs.sounds << 'sounds/bass-loops-002-with-drums-short-loop.wav'
+    if @bass_loop_counter == -1
+      args.outputs.sounds << 'sounds/bass-loops-002-with-drums-short-loop.wav'
+      @bass_loop_counter = 1
+    end
+  end
+
+  if @bass_loop_counter > 0 && @bass_loop_counter <= 960
+    @bass_loop_counter += 1
+  else
+    @bass_loop_counter = -1
   end
 
   if @start_tick + 30 > ticks
