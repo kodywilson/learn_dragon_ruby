@@ -66,6 +66,9 @@ def tick args
   #   a: 255,
   #   font: "fonts/manaspc.ttf"
   # }
+  #args.outputs.borders << [0, 0, 1440, 720, 255, 255, 255, 255]
+  args.outputs.solids << [0, 240, 1440, 10, 100, 200, 100, 255]
+  args.outputs.solids << [0, 0, 1440, 240, 160, 82, 45, 255]
   args.outputs.labels << [80, 60, ticks, -5, 0, 200, 050, 100, 125]
   args.state.cat_frame = ticks.idiv(4).mod(8)
   #args.state.cat_path = "sprites/cat/Walk-#{args.state.cat_frame}.png"
