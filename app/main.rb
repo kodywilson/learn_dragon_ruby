@@ -4,17 +4,17 @@ def tick args
   args.state.rotation  ||= 0
   args.state.x ||= 620
   args.state.y ||= 250
-  args.state.cat_x ||= 200
-  args.state.cat_y ||= 200
+  args.state.cat_x ||= 100
+  args.state.cat_y ||= 100
   ticks = args.state.tick_count
   @start_tick ||= -60
   @cat_jump_counter ||= 0
   @bass_loop_counter ||= -1
 
-  if args.inputs.mouse.click && ticks > 10 && @start_tick == -60
+  if ( args.inputs.mouse.click && ticks > 10 || args.inputs.keyboard.key_held.space ) && @start_tick == -60
     @start_tick = ticks
-    args.state.cat_x += 50
-    args.state.cat_y += 50
+    #args.state.cat_x += 50
+    #args.state.cat_y += 50
     if @bass_loop_counter == -1
       args.outputs.sounds << 'sounds/bass-loops-002-with-drums-short-loop.wav'
       @bass_loop_counter = 1
@@ -40,6 +40,13 @@ def tick args
     @start_tick = -60
     args.state.rotation = 0
   end
+
+  # Move sprite around with keypress
+  if args.inputs.keyboard.key_held.right
+    args.state.x += 5
+  elsif args.inputs.keyboard.key_held.left
+    args.state.x -= 5
+  end
   #Mist_Covered_Mountains.mp3
   # Label text as array
   args.outputs.labels << [670, 400, "Jumping Cat! Click to hop!",
@@ -59,7 +66,8 @@ def tick args
   }
   args.outputs.labels << [80, 60, ticks, -5, 0, 200, 050, 100, 125]
   args.state.cat_frame = ticks.idiv(4).mod(8)
-  args.state.cat_path = "sprites/cat/Walk-#{args.state.cat_frame}.png"
+  #args.state.cat_path = "sprites/cat/Walk-#{args.state.cat_frame}.png"
+  args.state.cat_path = "sprites/hexagon/blue.png"
   args.state.dog_path = "sprites/dog/Slide-#{args.state.cat_frame}.png"
   args.outputs.sprites << [args.state.x, args.state.y,
   args.state.cat_x, args.state.cat_y, args.state.cat_path, args.state.rotation]
