@@ -2,11 +2,13 @@
 
 def tick args
   args.state.click_count ||= 0
+  args.state.direction ||= 0
   args.state.rotation  ||= 0
   args.state.x ||= 620
   args.state.y ||= 250
   args.state.cat_x ||= 100
   args.state.cat_y ||= 100
+  args.state.movement_speed ||= 5
   ticks = args.state.tick_count
   @start_tick ||= -60
   @cat_jump_counter ||= 0
@@ -14,6 +16,8 @@ def tick args
 
   if ( args.state.click_count >= 3 || args.inputs.keyboard.key_held.space ) && @start_tick == -60
     @start_tick = ticks
+    args.state.direction = 0 if args.state.rotation == 0
+    args.state.direction = 180 if args.state.rotation == 180
     #args.state.cat_x += 50
     #args.state.cat_y += 50
     if @bass_loop_counter == -1
@@ -33,21 +37,27 @@ def tick args
 
   if @start_tick + 30 > ticks
     args.state.y += 3
-    args.state.rotation  -= 5
+    #args.state.rotation  -= 6 # Use for flip effect
   elsif
     @start_tick + 60 > ticks
     args.state.y -= 3
-    args.state.rotation  -= 5
+    #args.state.rotation  -= 6 # Use for flip effect
   else
     @start_tick = -60
-    args.state.rotation = 0
+    #args.state.rotation = args.state.direction
   end
 
   # Move sprite around with keypress
-  if args.inputs.keyboard.key_held.right
-    args.state.x += 5 unless args.state.x > 1175
-  elsif args.inputs.keyboard.key_held.left
-    args.state.x -= 5 if args.state.x > 0
+  if args.inputs.keyboard.key_held.right# && @start_tick + 60 < ticks
+    args.state.rotation = 0
+    args.state.direction = args.state.rotation
+    args.state.x += args.state.movement_speed #unless args.state.x > 1175 #create right bound
+    args.state.x = -20 if args.state.x > 1200 # allow right wrap
+  elsif args.inputs.keyboard.key_held.left# && @start_tick + 60 < ticks
+    args.state.rotation = 180
+    args.state.direction = args.state.rotation
+    args.state.x -= args.state.movement_speed# if args.state.x > 0 # create left bounds
+    args.state.x = 1200 if args.state.x < 20 # allow left wrap
   end
   
   # Label text as array
@@ -72,7 +82,7 @@ def tick args
   args.outputs.labels << [80, 60, ticks, -5, 0, 200, 050, 100, 125]
   args.state.cat_frame = ticks.idiv(4).mod(8)
   #args.state.cat_path = "sprites/cat/Walk-#{args.state.cat_frame}.png"
-  args.state.cat_path = "sprites/hexagon/blue.png"
+  args.state.cat_path = "sprites/circle/blue.png"
   args.state.dog_path = "sprites/dog/Slide-#{args.state.cat_frame}.png"
   args.outputs.sprites << [args.state.x, args.state.y,
   args.state.cat_x, args.state.cat_y, args.state.cat_path, args.state.rotation]
